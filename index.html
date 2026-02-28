@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Animated Roleplay Certificate</title>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    font-family:'Segoe UI', sans-serif;
+    background:#0a0a0a;
+    overflow-x:hidden;
+    color:white;
+}
+
+/* Floating animated background */
+body::before{
+    content:"";
+    position:fixed;
+    width:200%;
+    height:200%;
+    background: radial-gradient(circle, rgba(255,0,80,0.1) 1px, transparent 1px);
+    background-size:40px 40px;
+    animation: moveBg 20s linear infinite;
+    z-index:-1;
+}
+
+@keyframes moveBg{
+    from{transform:translate(0,0);}
+    to{transform:translate(-200px,-200px);}
+}
+
+.container{
+    max-width:800px;
+    margin:60px auto;
+    padding:40px;
+    background:#141414;
+    border-radius:20px;
+    box-shadow:0 0 40px rgba(255,0,80,0.4);
+    animation: fadeIn 1.5s ease;
+    position:relative;
+}
+
+/* Glowing animated border */
+.container::before{
+    content:"";
+    position:absolute;
+    inset:-3px;
+    border-radius:22px;
+    padding:3px;
+    background:linear-gradient(45deg, crimson, purple, crimson);
+    background-size:400%;
+    animation:borderGlow 6s linear infinite;
+    z-index:-1;
+}
+
+@keyframes borderGlow{
+    0%{background-position:0%;}
+    100%{background-position:400%;}
+}
+
+@keyframes fadeIn{
+    from{opacity:0; transform:translateY(30px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+h1{
+    text-align:center;
+    color:crimson;
+    animation: pulse 2s infinite alternate;
+}
+
+@keyframes pulse{
+    from{ text-shadow:0 0 10px crimson; }
+    to{ text-shadow:0 0 25px red; }
+}
+
+input, select{
+    width:90%;
+    padding:12px;
+    margin:8px;
+    border-radius:8px;
+    border:none;
+    background:#222;
+    color:white;
+    transition:0.3s;
+}
+
+input:focus, select:focus{
+    outline:none;
+    box-shadow:0 0 10px crimson;
+}
+
+button{
+    display:block;
+    margin:20px auto;
+    padding:14px 30px;
+    background:crimson;
+    color:white;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    box-shadow:0 0 20px red;
+    transform:scale(1.05);
+}
+
+#resultID{
+    text-align:center;
+    font-size:22px;
+    color:#00ffcc;
+    margin-top:15px;
+    opacity:0;
+    transition:0.5s;
+}
+
+.showID{
+    opacity:1 !important;
+    transform:scale(1.1);
+}
+
+#qrcode{
+    text-align:center;
+    margin-top:20px;
+    opacity:0;
+    transition:1s;
+}
+
+.showQR{
+    opacity:1 !important;
+}
+
+.shake{
+    animation:shake 0.4s;
+    border:2px solid red !important;
+}
+
+@keyframes shake{
+    0%{transform:translateX(0);}
+    25%{transform:translateX(-5px);}
+    50%{transform:translateX(5px);}
+    75%{transform:translateX(-5px);}
+    100%{transform:translateX(0);}
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Consensual Dynamic Certificate</h1>
+
+<input type="text" id="username" placeholder="Fet Username (@optional)">
+<input type="text" id="fullname" placeholder="Full Name">
+<input type="number" id="age" placeholder="Age (18+ required)">
+
+<select id="q1"><option value="">Bondage Preference</option><option>Light</option><option>Moderate</option><option>Heavy</option></select>
+<select id="q2"><option value="">Discipline Style</option><option>Verbal</option><option>Impact Play</option><option>Protocol-based</option></select>
+<select id="q3"><option value="">Collaring Interest</option><option>Yes</option><option>No</option></select>
+<select id="q4"><option value="">Service Orientation</option><option>Domestic</option><option>Personal</option><option>Ceremonial</option></select>
+<select id="q5"><option value="">Public Scene Comfort</option><option>Yes</option><option>No</option></select>
+<select id="q6"><option value="">Pain Tolerance</option><option>Low</option><option>Medium</option><option>High</option></select>
+<select id="q7"><option value="">Humiliation Play</option><option>Yes</option><option>No</option></select>
+<select id="q8"><option value="">Dynamic Type</option><option>24/7</option><option>Scene Only</option></select>
+<select id="q9"><option value="">Safe Word Established</option><option>Yes</option><option>No</option></select>
+<select id="q10"><option value="">Experience Level</option><option>Beginner</option><option>Intermediate</option><option>Advanced</option></select>
+
+<button onclick="generateCertificate()">Generate Certificate</button>
+
+<div id="resultID"></div>
+<div id="qrcode"></div>
+
+<button onclick="downloadPDF()">Download Certificate PDF</button>
+
+</div>
+
+<script>
+
+let certData = {};
+
+function validate(field){
+    if(!field.value){
+        field.classList.add("shake");
+        setTimeout(()=>field.classList.remove("shake"),400);
+        return false;
+    }
+    return true;
+}
+
+function generateCertificate(){
+
+    const fields=document.querySelectorAll("input,select");
+    let valid=true;
+    fields.forEach(f=>{ if(!validate(f)) valid=false; });
+    if(!valid) return;
+
+    if(age.value < 18){
+        alert("18+ only.");
+        return;
+    }
+
+    const username=username.value.replace("@","").toUpperCase();
+    const name=fullname.value;
+
+    const prefix=username.substring(0,3);
+    const random=Math.random().toString(36).substring(2,15).toUpperCase();
+    const raw=(prefix+random).substring(0,15);
+
+    const formatted=
+        raw.slice(0,4)+"-"+
+        raw.slice(4,8)+"-"+
+        raw.slice(8,12)+"-"+
+        raw.slice(12,15);
+
+    resultID.innerText=formatted;
+    resultID.classList.add("showID");
+
+    const qrText=`CONSENSUAL ROLEPLAY PROFILE
+Name: ${name}
+Username: ${username}
+Age: ${age.value}
+Roleplay ID: ${formatted}`;
+
+    certData={name,username,formatted};
+
+    qrcode.innerHTML="";
+    new QRCode(qrcode,{text:qrText,width:200,height:200});
+    qrcode.classList.add("showQR");
+}
+
+async function downloadPDF(){
+    if(!certData.formatted){alert("Generate first.");return;}
+
+    const { jsPDF } = window.jspdf;
+    const doc=new jsPDF();
+
+    doc.setFontSize(22);
+    doc.text("CONSENSUAL ROLEPLAY CERTIFICATE",20,30);
+    doc.text("Name: "+certData.name,20,50);
+    doc.text("Username: "+certData.username,20,60);
+    doc.text("ID: "+certData.formatted,20,70);
+
+    const qrCanvas=document.querySelector("#qrcode canvas");
+    const qrImage=qrCanvas.toDataURL("image/png");
+    doc.addImage(qrImage,"PNG",140,40,50,50);
+
+    doc.save("Roleplay_Certificate.pdf");
+}
+
+</script>
+
+</body>
+</html>
